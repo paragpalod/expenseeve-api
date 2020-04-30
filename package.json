@@ -4,7 +4,10 @@
   "description": "A Expense Management Application",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prod": "node server",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server",
+    "lint": "eslint server/* --ext .js --fix"
   },
   "repository": {
     "type": "git",
