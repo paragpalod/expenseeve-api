@@ -1,0 +1,23 @@
+{
+  "name": "expenseeve-api",
+  "version": "1.0.0",
+  "description": "A Expense Management Application",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paragpalod/expenseeve-api.git"
+  },
+  "keywords": [
+    "expense",
+    "management"
+  ],
+  "author": "Parag Palod",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/paragpalod/expenseeve-api/issues"
+  },
+  "homepage": "https://github.com/paragpalod/expenseeve-api#readme"
+}
