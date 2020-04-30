@@ -68,5 +68,10 @@
         }
       ]
     }
+  },
+  "nodemonConfig": {
+    "events": {
+      "restart": "npm run lint"
+    }
   }
 }
