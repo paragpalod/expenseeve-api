@@ -1,6 +1,5 @@
 const Joi = require('@hapi/joi');
 const DB = require('../../../models');
-const Package = require('../../../../package');
 
 const register = {
   auth: false,
@@ -26,7 +25,6 @@ const register = {
         };
       }
       const userObject = req.payload;
-      userObject.version = Package.version;
       const user = await DB.user.create(userObject);
       user.encryptPassword(req.payload.password);
       user.verify(req);

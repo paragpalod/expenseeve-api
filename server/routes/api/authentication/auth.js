@@ -1,12 +1,8 @@
 const Joi = require('@hapi/joi');
 const jwt = require('jsonwebtoken');
-const config = require('../../../config');
-const SERVER_SECRET = config.serverSecret;
-const APP_URL = config.resetPasswordLink.baseURL;
+const SERVER_SECRET = require('../../../config').serverSecret;
 const DB = require('../../../models');
-const email = require('../../../utils/email');
 
-// Log-in a user into the system. On success, issue a token for future requests.
 const login = {
   auth: false,
   tags: ['api', 'authentication'],
@@ -148,173 +144,6 @@ const logout = {
   }
 };
 
-const forgotPassword = {
-  auth: false,
-  tags: ['api', 'authentication'],
-  validate: {
-    payload: Joi.object({
-      email: Joi.string().required().lowercase().label('Email')
-    }),
-    failAction: (req, h, err) => err
-  },
-  handler: async (req) => {
-    try {
-      const user = await DB.user.findOne({ email: req.payload.email });
-      if (!user) {
-        throw {
-          isFromThrow: true,
-          message: 'User not found',
-          statusCode: 800
-        };
-      }
-      const resetPasswordToken = jwt.sign({
-        _id: user._id
-      }, SERVER_SECRET, {
-        expiresIn: 3 * 24 * 60 * 60
-      });
-      user.resetPasswordToken = resetPasswordToken;
-
-      user.isResetTokenVerified = false;
-
-      const link = APP_URL + user.resetPasswordToken;
-
-      email.sendMail(`${user.firstName} ${user.lastName}`, req.payload.email, link, 'resetPassword', req);
-      await user.save();
-      return '200';
-
-      // sms verification is remaining wil be done after sendSms api (TBD)
-    } catch (Exception) { return Exception; }
-  }
-};
-
-const resetPassword = {
-  auth: false,
-  tags: ['api', 'authentication'],
-  validate: {
-    payload: Joi.object({
-      newPassword: Joi.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{6,20})/).required().label('New Password'),
-      confirmNewPassword: Joi.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{6,20})/).required().label('Confirm New Password'),
-      resetToken: Joi.string().required().label('Reset Token')
-    }),
-    failAction: (req, h, err) => err
-  },
-  handler: async (req) => {
-    try {
-      const user = await DB.user.findOne({ resetPasswordToken: req.payload.resetToken });
-      if (!user) {
-        throw {
-          isFromThrow: true,
-          message: 'User not found',
-          statusCode: 800
-        };
-      }
-
-      await jwt.verify(user.resetPasswordToken, SERVER_SECRET, async function (err) {
-        if (err) {
-          throw {
-            isFromThrow: true,
-            message: err.message,
-            statusCode: 900
-          };
-        }
-        if (req.payload.newPassword !== req.payload.confirmNewPassword) {
-          throw {
-            isFromThrow: true,
-            message: 'Passwords did not match',
-            statusCode: 801
-          };
-        }
-        user.encryptPassword(req.payload.newPassword);
-        user.resetPasswordToken = undefined;
-        user.isResetTokenVerified = undefined;
-        user.save();
-
-        const sessionList = await DB.session.find({ userID: user._id, deletedAt: null });
-        if (sessionList.length) {
-          Promise.all(sessionList.map(async session => {
-            session.type = 'inactive';
-            session.deletedAt = new Date();
-            await session.save();
-          }));
-        }
-        email.sendMail(`${user.firstName} ${user.lastName}`, user.email, null, 'resetPasswordSuccess', req);
-
-        return 'Session deactivated log in again';
-      });
-      return { user };
-    } catch (Exception) { return Exception; }
-  }
-};
-
-const changePassword = {
-  tags: ['api', 'authentication'],
-  validate: {
-    payload: Joi.object({
-      oldPassword: Joi.string().required().label('Old Password'),
-      newPassword: Joi.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{6,20})/).required().label('New Password'),
-      confirmNewPassword: Joi.string().regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])(?=.{6,20})/).required().label('Confirm Password')
-    }),
-    failAction: (req, h, err) => err
-  },
-  handler: async (req) => {
-    try {
-      const user = await DB.user.findOne({ _id: req.auth.credentials._id });
-      if (!user) {
-        throw {
-          isFromThrow: true,
-          message: 'User not found',
-          statusCode: 800
-        };
-      }
-
-      /*
-      verifying users old password and if user inputs old password more than 5 times he will be
-      logged outto prevent wrong person from inputting multiple password for seurity reasons only
-      */
-      if (!user.authenticate(req.payload.oldPassword)) {
-        user.loginAttempts += 1;
-        if (user.loginAttempts > 4) {
-          await DB.session.deleteOne({ _id: req.auth.credentials.session._id });
-          user.loginAttempts = 0;
-          throw {
-            isFromThrow: true,
-            message: 'Too many Invalid Password Input. Logging you out',
-            statusCode: 401
-          };
-        }
-        await user.save();
-        throw {
-          isFromThrow: true,
-          message: 'Invalid old password',
-          statusCode: 704
-        };
-      }
-      if (user.loginAttempts > 0) {
-        user.loginAttempts = 0;
-        await user.save();
-      }
-
-      if (req.payload.newPassword !== req.payload.confirmNewPassword) {
-        throw {
-          isFromThrow: true,
-          message: 'Passwords do not match',
-          statusCode: 801
-        };
-      }
-      user.encryptPassword(req.payload.newPassword);
-      await user.save();
-
-      // deleting all sessions for the current user as he changes the password
-      // user will be logged out of all the sessions
-      await DB.session.deleteMany({ userID: user._id });
-
-      email.sendMail(`${user.firstName} ${user.lastName}`, user.email, null, 'changePasswordSuccess', req);
-
-      return 'Password Changed';
-    } catch (Exception) { return Exception; }
-  }
-};
-
 const verifyToken = {
   auth: false,
   tags: ['api', 'authentication'],
@@ -448,21 +277,6 @@ exports.routes = [{
   method: 'DELETE',
   path: '/logout',
   config: logout
-},
-{
-  method: 'POST',
-  path: '/forgotPassword',
-  config: forgotPassword
-},
-{
-  method: 'POST',
-  path: '/resetPassword',
-  config: resetPassword
-},
-{
-  method: 'PUT',
-  path: '/v1/changePassword',
-  config: changePassword
 },
 {
   method: 'PUT',
