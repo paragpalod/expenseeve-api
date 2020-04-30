@@ -2,7 +2,7 @@
 const users = {
   paragpalod: {
     id: '1',
-    name: 'Parag Palod',
+    name: 'Expenseeve',
     password: 'developer#123'
   }
 };
