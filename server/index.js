@@ -1,4 +1,3 @@
-require('dotenv').config();// comment this while deploying to production
 const Glue = require('@hapi/glue');
 const { manifest } = require('./config/server');
 

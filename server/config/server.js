@@ -45,9 +45,9 @@ exports.manifest = {
             { bearer: [] }
           ],
           info: {
-            title: 'Dummy Project',
+            title: 'Expenseeve APIs',
             description: 'REST APIs to access and administer project resources',
-            version: '1.0'
+            version: '1.0.0'
           },
           auth: 'developer'
         }
