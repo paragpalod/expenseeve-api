@@ -28,11 +28,8 @@ exports.plugin = {
             }
 
             const userFields = [
-              'firstName',
-              'lastName',
-              'isVerified',
-              'isSiloAdmin',
-              'deletedAt'
+              'username',
+              'name'
             ];
             const user = await DB.user.findOne({ _id: session.userID }).select(userFields.join(" "));
             if (!user || user.isSiloAdmin || user.deletedAt || !user.isVerified) {
