@@ -22,5 +22,51 @@
   "bugs": {
     "url": "https://github.com/paragpalod/expenseeve-api/issues"
   },
-  "homepage": "https://github.com/paragpalod/expenseeve-api#readme"
+  "homepage": "https://github.com/paragpalod/expenseeve-api#readme",
+  "eslintConfig": {
+    "env": {
+      "commonjs": true,
+      "es6": true,
+      "node": true
+    },
+    "extends": [
+      "standard"
+    ],
+    "globals": {
+      "Atomics": "readonly",
+      "SharedArrayBuffer": "readonly"
+    },
+    "parserOptions": {
+      "ecmaVersion": 2019
+    },
+    "rules": {
+      "no-throw-literal": 0,
+      "quotes": 0,
+      "indent": [
+        "error",
+        2,
+        {
+          "SwitchCase": 1
+        }
+      ],
+      "no-console": 0,
+      "no-debugger": 0,
+      "semi": [
+        1,
+        "always"
+      ],
+      "no-trailing-spaces": 0,
+      "eol-last": 0,
+      "no-underscore-dangle": 0,
+      "no-alert": 0,
+      "no-lone-blocks": 0,
+      "no-unused-vars": [
+        1,
+        {
+          "vars": "all",
+          "args": "after-used"
+        }
+      ]
+    }
+  }
 }
