@@ -23,7 +23,7 @@ you have to install mongo on your machine to connecct to database otherwise add 
 mongo atlas databse url in your envirnoment variable
 */
 const Connection = mongoose.createConnection(
-  process.env.MONGODB_URI,
+  'mongodb://localhost:27017/expenseeve',
   {
     useNewUrlParser: true,
     useUnifiedTopology: true,

@@ -1,5 +1,3 @@
-'use strict';
-
 module.exports = function (Schema) {
   const Session = new Schema({
     token: {
@@ -11,14 +9,10 @@ module.exports = function (Schema) {
     },
     userID: {
       type: Schema.Types.ObjectId,
-      ref: 'User',
       required: true
     },
     metadata: {
       type: String
-    },
-    deletedAt: {
-      type: Date
     }
   }, { timestamps: true });
 
