@@ -26,3 +26,7 @@ exports.encryptUserPassword = (password) => {
   const hashedPassword = Crypto.pbkdf2Sync(password, Buffer.from(salt, 'base64'), 10000, 2048, 'RSA-SHA512').toString('base64');
   return { hashedPassword, salt };
 };
+
+exports.userAuthenticate = (password, salt, hashedPassword) => (
+  hashedPassword === Crypto.pbkdf2Sync(password, Buffer.from(salt, 'base64'), 10000, 2048, 'RSA-SHA512').toString('base64')
+);
