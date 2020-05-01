@@ -20,3 +20,9 @@ exports.error = (message, err, statusCode) => {
 
   return error;
 };
+
+exports.encryptUserPassword = (password) => {
+  const salt = Crypto.randomBytes(16).toString('base64');
+  const hashedPassword = Crypto.pbkdf2Sync(password, Buffer.from(salt, 'base64'), 10000, 2048, 'RSA-SHA512').toString('base64');
+  return { hashedPassword, salt };
+};
