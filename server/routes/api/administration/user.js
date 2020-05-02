@@ -1,43 +1,151 @@
 const Joi = require('@hapi/joi');
 const DB = require('../../../models');
+const Utils = require('../../../utils');
+const error = Utils.error;
 
-const register = {
-  auth: false,
+const updateUsername = {
   tags: ['api', 'user'],
   validate: {
-    payload: Joi.object({
-      firstName: Joi.string().required().lowercase().trim().label('Name'),
-      lastName: Joi.string().required().trim().label('Display Name'),
-      email: Joi.string().email().required().lowercase().trim().label('Email'),
-      mobile: Joi.string().required().trim().label('Mobile'),
-      password: Joi.string().required().trim().label('Mobile'),
-      confirmPassword: Joi.string().required().trim().label('Mobile')
+    params: Joi.object({
+      userID: Joi.string().required().label('User')
     }),
-    failAction: (req, h, err) => err
+    payload: Joi.object({
+      username: Joi.string().label('Username')
+    }),
+    failAction: (req, h, err) => error(err.details[0].message, 'Payload/Query/Params Validation', 700)
   },
   handler: async (req) => {
     try {
-      if (req.payload.password !== req.payload.confirmPassword) {
-        throw {
-          isFromThrow: true,
-          message: 'Passwords do not match',
-          statusCode: 801
-        };
+      // validatinng unique username condition
+      const USER = await DB.user.findOne({ username: req.payload.username, _id: { $ne: req.params.userID } });
+      if (USER) {
+        throw { message: 'Username already exists.' };
       }
-      const userObject = req.payload;
-      const user = await DB.user.create(userObject);
-      user.encryptPassword(req.payload.password);
-      user.verify(req);
-      await user.save();
-      return 'Account created successfully';
-    } catch (Exception) { return Exception; }
+
+      // finding and updating username in user model
+      const User = await DB.user.findOne({ _id: req.params.userID });
+      if (!User) {
+        throw { message: 'User not found' };
+      }
+      User.username = req.payload.username;
+      const UpdatedUser = await User.save();
+
+      // creating a new userinfo object for localstorage
+      const UserInfo = {
+        _id: UpdatedUser._id,
+        username: UpdatedUser.username,
+        name: UpdatedUser.name,
+        totalBugdet: UpdatedUser.totalBugdet
+      };
+
+      return UserInfo;
+    } catch (Exception) {
+      if (Exception.errors && Exception.errors[Object.keys(Exception.errors)[0]].message) {
+        // this is error related to mongoose and mongoose schema
+        return error(Exception.errors[Object.keys(Exception.errors)[0]].message, 'Database', 700);
+      } else {
+        return error(Exception.message);
+      }
+    }
+  }
+};
+
+const updateName = {
+  tags: ['api', 'user'],
+  validate: {
+    params: Joi.object({
+      userID: Joi.string().required().label('User')
+    }),
+    payload: Joi.object({
+      name: Joi.string().label('Name')
+    }),
+    failAction: (req, h, err) => error(err.details[0].message, 'Payload/Query/Params Validation', 700)
+  },
+  handler: async (req) => {
+    try {
+      // finding and updating name in user model
+      const User = await DB.user.findOne({ _id: req.params.userID });
+      if (!User) {
+        throw { message: 'User not found' };
+      }
+
+      User.name = req.payload.name;
+      const USER = await User.save();
+
+      const UserInfo = {
+        _id: USER._id,
+        username: USER.username,
+        name: USER.name,
+        totalBugdet: USER.totalBugdet
+      };
+
+      return UserInfo;
+    } catch (Exception) {
+      if (Exception.errors && Exception.errors[Object.keys(Exception.errors)[0]].message) {
+        // this is error related to mongoose and mongoose schema
+        return error(Exception.errors[Object.keys(Exception.errors)[0]].message, 'Database', 700);
+      } else {
+        return error(Exception.message);
+      }
+    }
+  }
+};
+
+const updateTotalBudget = {
+  tags: ['api', 'user'],
+  validate: {
+    params: Joi.object({
+      userID: Joi.string().required().label('User')
+    }),
+    payload: Joi.object({
+      totalBugdet: Joi.number().min(1).label('Total Budget')
+    }),
+    failAction: (req, h, err) => error(err.details[0].message, 'Payload/Query/Params Validation', 700)
+  },
+  handler: async (req) => {
+    try {
+      // finding and updating username inuser model
+      const User = await DB.user.findOne({ _id: req.params.userID });
+      if (!User) {
+        throw { message: 'User not found' };
+      }
+
+      User.totalBugdet = req.payload.totalBugdet;
+      const USER = await User.save();
+
+      const UserInfo = {
+        _id: USER._id,
+        username: USER.username,
+        name: USER.name,
+        totalBugdet: USER.totalBugdet
+      };
+
+      return UserInfo;
+    } catch (Exception) {
+      if (Exception.errors && Exception.errors[Object.keys(Exception.errors)[0]].message) {
+        // this is error related to mongoose and mongoose schema
+        return error(Exception.errors[Object.keys(Exception.errors)[0]].message, 'Database', 700);
+      } else {
+        return error(Exception.message);
+      }
+    }
   }
 };
 
 exports.routes = [
   {
-    method: 'POST',
-    path: '/register',
-    config: register
+    method: 'PUT',
+    path: '/updateUsername/{userID}',
+    config: updateUsername
+  },
+  {
+    method: 'PUT',
+    path: '/updateName/{userID}',
+    config: updateName
+  },
+  {
+    method: 'PUT',
+    path: '/updateTotalBudget/{userID}',
+    config: updateTotalBudget
   }
 ];

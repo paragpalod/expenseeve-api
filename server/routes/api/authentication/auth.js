@@ -172,6 +172,68 @@ const validateSession = {
   }
 };
 
+const changePassword = {
+  tags: ['api', 'authentication'],
+  description: 'Change existing password for user only after authenticating their old password',
+  validate: {
+    payload: Joi.object({
+      oldPassword: Joi.string().required().label('Old Password'),
+      newPassword: Joi.string().required().label('New Password'),
+      confirmNewPassword: Joi.string().required().label('Confirm Password')
+    }),
+    failAction: (req, h, err) => error(err.details[0].message, 'Payload/Query/Params Validation', 700)
+  },
+  handler: async (req) => {
+    try {
+      console.log(req.auth.credentials);
+      const user = await DB.user.findOne({ _id: req.auth.credentials._id });
+      if (!user) {
+        throw { message: 'User not found' };
+      }
+
+      /*
+      verifying users old password and if user inputs old password more than 5 times he will be
+      logged outto prevent wrong person from inputting multiple password for seurity reasons only
+      */
+      if (!Utils.userAuthenticate(req.payload.oldPassword, user.salt, user.hashedPassword)) {
+        user.loginAttempts += 1;
+        if (user.loginAttempts > 4) {
+          await DB.session.deleteOne({ _id: req.auth.credentials.session._id });
+          user.loginAttempts = 0;
+          throw { message: 'Too many Invalid Password Input. Logging you out' };
+        }
+        await user.save();
+        throw { message: 'Invalid old password' };
+      }
+      if (user.loginAttempts > 0) {
+        user.loginAttempts = 0;
+        await user.save();
+      }
+
+      if (req.payload.newPassword !== req.payload.confirmNewPassword) {
+        throw { message: 'Passwords do not match' };
+      }
+      const { hashedPassword, salt } = Utils.encryptUserPassword(req.payload.newPassword);
+      user.salt = salt;
+      user.hashedPassword = hashedPassword;
+      await user.save();
+
+      // deleting all sessions for the current user as he changes the password
+      // user will be logged out of all the sessions
+      await DB.session.deleteMany({ userID: user._id });
+
+      return 'Password Changed';
+    } catch (Exception) {
+      if (Exception.errors && Exception.errors[Object.keys(Exception.errors)[0]].message) {
+        // this is error related to mongoose and mongoose schema
+        return error(Exception.errors[Object.keys(Exception.errors)[0]].message, 'Database', 700);
+      } else {
+        return error(Exception.message);
+      }
+    }
+  }
+};
+
 exports.routes = [{
   method: 'POST',
   path: '/login',
@@ -186,5 +248,10 @@ exports.routes = [{
   method: 'GET',
   path: '/validateSession/{token}',
   config: validateSession
+},
+{
+  method: 'PUT',
+  path: '/changePassword',
+  config: changePassword
 }
 ];

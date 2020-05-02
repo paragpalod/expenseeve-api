@@ -32,7 +32,7 @@ exports.plugin = {
               'name'
             ];
             const user = await DB.user.findOne({ _id: session.userID }).select(userFields.join(" "));
-            if (!user || user.isSiloAdmin || user.deletedAt || !user.isVerified) {
+            if (!user) {
               throw Boom.unauthorized(null, 'Custom');
             }
             user.session = session;
