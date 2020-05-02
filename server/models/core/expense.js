@@ -16,6 +16,10 @@ module.exports = function (Schema) {
       type: Schema.Types.ObjectId,
       required: true
     },
+    date: {
+      type: Date,
+      required: true
+    },
     deletedAt: {
       type: Number,
       default: null

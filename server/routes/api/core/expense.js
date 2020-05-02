@@ -7,9 +7,10 @@ const createExpense = {
   tags: ['api', 'expense'],
   validate: {
     payload: Joi.object({
-      itemName: Joi.string().required().trim().label('Name'),
-      amount: Joi.number().required().label('Amount'),
       categoryID: Joi.string().required().label('Category'),
+      itemName: Joi.string().required().trim().label('Item Name'),
+      amount: Joi.number().min(1).required().label('Amount'),
+      date: Joi.date().required().label('Date'),
       userID: Joi.string().required().label('User')
     }),
     failAction: (req, h, err) => error(err.details[0].message, 'Payload/Query/Params Validation', 700)
@@ -23,7 +24,7 @@ const createExpense = {
 
       const Category = await DB.category.findById(req.payload.categoryID);
       if (!Category) {
-        throw { message: 'User not found' };
+        throw { message: 'Category not found' };
       }
 
       const EXPENSE = await DB.expense.create(req.payload);
@@ -32,9 +33,6 @@ const createExpense = {
       if (Exception.errors && Exception.errors[Object.keys(Exception.errors)[0]].message) {
         // this is error related to mongoose and mongoose schema
         return error(Exception.errors[Object.keys(Exception.errors)[0]].message, 'Database', 700);
-      } else if (Exception && Exception.code === 11000) {
-        // this is error related to mongodb database if created entry validated the unique value
-        return error('User already exists', 'Database', 700);
       } else {
         return error(Exception.message);
       }
@@ -46,18 +44,20 @@ const updateExpense = {
   tags: ['api', 'expense'],
   validate: {
     params: Joi.object({
-      expenseID: Joi.string().guid({ version: 'uuidv4' }).required().label('CategoryID')
+      expenseID: Joi.string().required().label('Expense')
     }),
     payload: Joi.object({
-      itemName: Joi.string().required().trim().label('Name'),
+      itemName: Joi.string().required().trim().label('Item Name'),
       amount: Joi.number().required().label('Amount'),
       categoryID: Joi.string().required().label('Category'),
-      userID: Joi.string().required().label('User')
+      userID: Joi.string().required().label('User'),
+      date: Joi.date().required().label('Date')
     }),
     failAction: (req, h, err) => error(err.details[0].message, 'Payload/Query/Params Validation', 700)
   },
   async handler (req) {
     try {
+      console.log(req.payload);
       let Expense = await DB.expense.findById(req.params.expenseID);
       if (!Expense) {
         throw { message: 'Expense not found.' };
@@ -70,7 +70,7 @@ const updateExpense = {
 
       const Category = await DB.category.findById(req.payload.categoryID);
       if (!Category) {
-        throw { message: 'User not found' };
+        throw { message: 'Category not found' };
       }
 
       Expense = Object.assign(Expense, req.payload);
@@ -80,9 +80,6 @@ const updateExpense = {
       if (Exception.errors && Exception.errors[Object.keys(Exception.errors)[0]].message) {
         // this is error related to mongoose and mongoose schema
         return error(Exception.errors[Object.keys(Exception.errors)[0]].message, 'Database', 700);
-      } else if (Exception && Exception.code === 11000) {
-        // this is error related to mongodb database if created entry validated the unique value
-        return error('User already exists', 'Database', 700);
       } else {
         return error(Exception.message);
       }
@@ -108,7 +105,7 @@ const getExpenseList = {
       if (req.query.categoryID) {
         where.categoryID = req.query.categoryID;
       }
-      const EXPENSES = await DB.category.find(where).sort({ createdAt: -1 });
+      const EXPENSES = await DB.expense.find(where).sort({ createdAt: -1 });
       return EXPENSES;
     } catch (Exception) {
       if (Exception.errors && Exception.errors[Object.keys(Exception.errors)[0]].message) {
@@ -123,7 +120,7 @@ const getExpenseList = {
 
 const deleteExpense = {
   tags: ['api', 'expense'],
-  description: 'Soft delete category',
+  description: 'Soft delete expenses',
   validate: {
     params: Joi.object({
       expenseID: Joi.string().required().label('Expense'),
@@ -135,7 +132,7 @@ const deleteExpense = {
     try {
       const expense = await DB.expense.findById(req.params.expenseID);
       if (!expense) {
-        throw { message: 'Category not found.' };
+        throw { message: 'Expense not found.' };
       }
       if (req.params.action === 'activate') {
         expense.deletedAt = null;
@@ -143,7 +140,7 @@ const deleteExpense = {
         expense.deletedAt = new Date(Date.now());
       }
       await expense.save();
-      return `Category ${req.params.action}d successfully`;
+      return `Expense ${req.params.action}d successfully`;
     } catch (Exception) {
       if (Exception.errors && Exception.errors[Object.keys(Exception.errors)[0]].message) {
         // this is error related to mongoose and mongoose schema

@@ -38,13 +38,19 @@ const getCategoryList = {
   tags: ['api', 'category'],
   validate: {
     query: Joi.object({
-      userID: Joi.string().label('Display Name')
+      userID: Joi.string().label('User'),
+      activationStatus: Joi.string().label('Activation Status')
     }),
     failAction: (req, h, err) => error(err.details[0].message, 'Payload/Query/Params Validation', 700)
   },
   async handler (req) {
     try {
-      const CATEGORIES = await DB.category.find({ userID: req.query.userID }).sort({ createdAt: -1 });
+      const Query = {
+        userID: req.query.userID
+      };
+      if (req.query.activationStatus === 'active') Query.deletedAt = null;
+      if (req.query.activationStatus === 'inactive') Query.deletedAt = { $ne: null };
+      const CATEGORIES = await DB.category.find(Query).sort({ createdAt: -1 });
       return CATEGORIES;
     } catch (Exception) {
       if (Exception.errors && Exception.errors[Object.keys(Exception.errors)[0]].message) {
