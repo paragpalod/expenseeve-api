@@ -66,9 +66,17 @@ const login = {
           await createdSession.save();
           user.loginAttempts = 0;
           user.lockUntill = undefined;
-          await user.save();
 
-          return { token };
+          const USER = await user.save();
+
+          const UserInfo = {
+            _id: USER._id,
+            username: USER.username,
+            name: USER.name,
+            totalBugdet: USER.totalBugdet
+          };
+
+          return { token, user: UserInfo };
         } else {
           // If the user is locked, but password entered is correct, user should not be logged in
           throw { message: 'Too many failed login attempts. Please try again in 30 seconds' };
@@ -143,20 +151,14 @@ const validateSession = {
       session.token = token;
       const SESSION = await session.save();
       // find the user for whom this session was created  to provide updated data to the client side
-      const USER = await DB.user.findOne({ _id: session.userID, deletedAt: null });
+      const USER = await DB.user.findOne({ _id: session.userID });
 
-      // created a object userInfo to provide data as per front- end theme
-      // following key are added with role name obtained earlier
+      // created a object userInfo to provide data for localstorage
       const UserInfo = {
         _id: USER._id,
-        firstName: USER.firstName,
-        lastName: USER.lastName,
-        email: USER.email,
-        mobile: USER.mobile,
-        deletedAt: USER.deletedAt,
-        isVerified: USER.isVerified,
-        isSiloAdmin: USER.isSiloAdmin,
-        activeSession: USER.activeSession
+        username: USER.username,
+        name: USER.name,
+        totalBugdet: USER.totalBugdet
       };
       return { token: SESSION.token, user: UserInfo };
     } catch (Exception) {

@@ -8,7 +8,7 @@ const signup = {
   tags: ['api', 'user'],
   validate: {
     payload: Joi.object({
-      username: Joi.string().required().lowercase().trim().label('Username'),
+      username: Joi.string().required().trim().label('Username'),
       name: Joi.string().required().trim().label('Name'),
       password: Joi.string().required().trim().label('Password'),
       confirmPassword: Joi.string().required().trim().label('Confirm Password')
