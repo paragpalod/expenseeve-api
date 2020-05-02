@@ -73,7 +73,7 @@ const login = {
             _id: USER._id,
             username: USER.username,
             name: USER.name,
-            totalBugdet: USER.totalBugdet
+            totalBudget: USER.totalBudget
           };
 
           return { token, user: UserInfo };
@@ -158,7 +158,7 @@ const validateSession = {
         _id: USER._id,
         username: USER.username,
         name: USER.name,
-        totalBugdet: USER.totalBugdet
+        totalBudget: USER.totalBudget
       };
       return { token: SESSION.token, user: UserInfo };
     } catch (Exception) {

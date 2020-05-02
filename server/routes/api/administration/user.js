@@ -35,7 +35,7 @@ const updateUsername = {
         _id: UpdatedUser._id,
         username: UpdatedUser.username,
         name: UpdatedUser.name,
-        totalBugdet: UpdatedUser.totalBugdet
+        totalBudget: UpdatedUser.totalBudget
       };
 
       return UserInfo;
@@ -76,7 +76,7 @@ const updateName = {
         _id: USER._id,
         username: USER.username,
         name: USER.name,
-        totalBugdet: USER.totalBugdet
+        totalBudget: USER.totalBudget
       };
 
       return UserInfo;
@@ -98,7 +98,7 @@ const updateTotalBudget = {
       userID: Joi.string().required().label('User')
     }),
     payload: Joi.object({
-      totalBugdet: Joi.number().min(1).label('Total Budget')
+      totalBudget: Joi.number().min(1).label('Total Budget')
     }),
     failAction: (req, h, err) => error(err.details[0].message, 'Payload/Query/Params Validation', 700)
   },
@@ -110,14 +110,14 @@ const updateTotalBudget = {
         throw { message: 'User not found' };
       }
 
-      User.totalBugdet = req.payload.totalBugdet;
+      User.totalBudget = req.payload.totalBudget;
       const USER = await User.save();
 
       const UserInfo = {
         _id: USER._id,
         username: USER.username,
         name: USER.name,
-        totalBugdet: USER.totalBugdet
+        totalBudget: USER.totalBudget
       };
 
       return UserInfo;

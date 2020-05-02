@@ -21,6 +21,9 @@ module.exports = function (Schema) {
     },
     lockUntill: {
       type: Date
+    },
+    totalBudget: {
+      type: Number
     }
   }, { timestamps: true });
 
