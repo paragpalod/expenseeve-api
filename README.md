@@ -2,7 +2,7 @@
 
 A expense management node application to compliment with the [expenseeve-app](https://github.com/paragpalod/expenseeve-app) front end.
 
-All the information related to API is provided in this file, and information related to APP is provided in [expenseeve-api](https://github.com/paragpalod/expenseeve-app)
+All the information related to API is provided in this file, and information related to APP is provided in [expenseeve-app](https://github.com/paragpalod/expenseeve-app)
 
 ## Folder Structure and Explaination
 
