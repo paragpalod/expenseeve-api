@@ -12,45 +12,11 @@ exports.manifest = {
   register: {
     plugins: [
       {
-        plugin: require('@hapi/basic')
-      },
-      {
         plugin: './authStrategy/auth'
-      },
-      {
-        plugin: './authStrategy/developerauth'
       },
       {
         plugin: './routes',
         routes: { prefix: '/api' }
-      },
-      {
-        plugin: require('@hapi/inert')
-      },
-      {
-        plugin: require('vision')
-      },
-      {
-        plugin: require('hapi-swagger'),
-        options: {
-          grouping: 'tags',
-          securityDefinitions: {
-            bearer: {
-              type: 'apiKey',
-              name: 'Authorization',
-              in: 'header'
-            }
-          },
-          security: [
-            { bearer: [] }
-          ],
-          info: {
-            title: 'Expenseeve APIs',
-            description: 'REST APIs to access and administer project resources',
-            version: '1.0.0'
-          },
-          auth: 'developer'
-        }
       },
       {
         plugin: require('@hapi/good'),
