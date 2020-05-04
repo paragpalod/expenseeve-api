@@ -1,16 +1,8 @@
 # expenseeve-api
 
-A expense management application
+A expense management node application to compliment with the [expenseeve-app](https://github.com/paragpalod/expenseeve-app) front end.
 
-## Info
-
-1. Langauge :- Javascript
-2. Envirnoment :- Node Js
-3. Framework :- [Hapi Js]( https://hapi.dev/api/?v=18.4.1 )
-
-## Development Envirnoment Setup
-
-1. Install eslint package in your IDE or Text Editor
+All the information related to API is provided in this file, and information related to APP is provided in [expenseeve-api](https://github.com/paragpalod/expenseeve-app)
 
 ## Folder Structure and Explaination
 
@@ -76,4 +68,24 @@ A expense management application
 
 **./README.md**:- You are currently reading this file
 
-## Start Command :- npm start
+## Platform and Editor
+I have used Fedora 31 workstation (64 bit) for development and testing. I used Atom text editor.
+
+## Technologies/Libraries Used
+
+1. Javascript
+2. Node Js
+3. [Hapi Js](https://hapi.dev/api/?v=19.1.1#route-options)
+4. jsonwebtoken
+5. mongoose js
+6. Mongo Db
+
+Instructions
+--------------
+Please follow these instructions for running the application.
+
+###### API
+- [] install mongodb, node js , npm on your machine
+- [] Clone expenseeve-api repo from github.com/paragpalod/expenseeve-api
+- [] Install all the dependancies and devedependancies uaing ```npm install``` or ```npm i```
+- [] start the server using ```npm start```
