@@ -80,7 +80,7 @@
     "@hapi/good-console": "^8.1.0",
     "@hapi/good-squeeze": "^5.2.0",
     "@hapi/hapi": "^18.0.0",
-    "jsonwebtoken": "^8.5.1",
+    "jsonwebtoken": "^9.0.0",
     "mongoose": "^5.6.4",
     "white-out": "^2.0.2"
   },
